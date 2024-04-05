@@ -2,7 +2,7 @@ FROM debian:stable as build
 
 RUN apt-get update
 
-RUN apt-get install -y git gcc meson ninja-build wget
+RUN apt-get install -y git gcc meson ninja-build wget procps
 
 WORKDIR /usr/local/bin/
 
@@ -10,9 +10,9 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_
 
 RUN tar -xvzf boost_1_82_0.tar.gz 
 
-ARG BOOST_ROOT=/usr/local/bin/boost_1_82_0/
+ENV BOOST_ROOT=/usr/local/bin/boost_1_82_0/
 
-WORKDIR /usr/local/bin/coati
+WORKDIR /usr/local/bin/coati_src
 
 RUN git clone https://github.com/CartwrightLab/coati.git .
 
@@ -20,13 +20,17 @@ RUN meson setup builddir --buildtype=release
 
 RUN meson compile -C builddir
 
-ARG DESTDIR=/usr/local/bin/coati_build/
+# ARG DESTDIR=/usr/local/bin/coati_build/
 
 RUN meson install -C builddir
 
-FROM debian:stable as dist
+WORKDIR /usr/local/bin/
 
-COPY --from=build /usr/local/bin/coati_build/usr/local/bin/coati /usr/local/bin/coati
+# FROM debian:stable as dist
 
-ENV PATH="${PATH}:/usr/local/bin/"
 
+# #This is just for nextflow
+# # RUN apt-get update
+# # RUN apt-get install -y procps
+
+# COPY --from=build /usr/local/bin/coati_build/usr/local/bin/coati /usr/local/bin/coati
